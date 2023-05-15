@@ -16,9 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('source');
             $table->unsignedBigInteger('owner');
-            $table->foreign('owner')->references('id')->on('users'); //Id usuario responsable
             $table->unsignedBigInteger('created_by');
-            $table->foreign('created_by')->references('id')->on('users'); //Id usuario que ha creado el candidato
             $table->timestamps();
         });
     }

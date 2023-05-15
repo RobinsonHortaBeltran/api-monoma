@@ -7,17 +7,33 @@ use App\Http\Requests\MyValidateRequest;
 use App\Models\Candidate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 class CandidateController extends Controller
 {
     public function index()
     {
         try {
             if (Auth::user()->role == "manager") {
-                $candidate = Candidate::with('owner_data')->with('created_by_data')->get();
-                //Cache::store('redis')->put('candidatos-manager', $candidate, 3);
+                $key = 'candidates';
+                // Verificar si los datos están en caché
+                if (Cache::has($key)) {
+                    $candidate = Cache::get($key);   
+                }else {
+                    $candidate = Candidate::with('owner_data')->with('created_by_data')->get();
+                    // Guardar los datos en caché durante 60 segundos
+                    Cache::put($key, ['candidates' => $candidate], 120);
+                }
             } elseif (Auth::user()->role == "agent") {
-                $candidate = Candidate::with('owner_data')->with('created_by_data')->where('owner', Auth::user()->id)->get();
+                $key = 'candidates';
+                // Verificar si los datos están en caché
+                if (Cache::has($key)) {
+                    $candidate = Cache::get($key);
+                }else {
+                    $candidate = Candidate::with('owner_data')->with('created_by_data')->where('owner', Auth::user()->id)->get();
+                    // Guardar los datos en caché durante 60 segundos
+                    Cache::put($key, ['candidates' => $candidate], 120);
+                }
             }
             if ($candidate) {
                 $response = [
@@ -27,7 +43,8 @@ class CandidateController extends Controller
                     ],
                     "data" => $candidate
                 ];
-                return response()->json($response, 201);
+                $status=201;
+               
             } else {
                 $response = [
                     "meta" => [
@@ -35,8 +52,9 @@ class CandidateController extends Controller
                         "errors" => ["Token expired"]
                     ]
                 ];
-                return response()->json($response, 401);
+                $status= 401;
             }
+            return response()->json($response, $status);
         } catch (\Throwable $th) {
             throw $th;
         }

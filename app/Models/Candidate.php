@@ -11,6 +11,13 @@ class Candidate extends Model
     
     protected $table = 'candidates';
 
+    protected $fillable = [
+        'name',
+        'source',
+        'owner',
+        'created_by'
+    ];
+
     public function owner_data()
     {
         return $this->belongsTo(User::class, 'owner', 'id');

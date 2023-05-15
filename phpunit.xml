@@ -4,6 +4,9 @@
          bootstrap="vendor/autoload.php"
          colors="true"
 >
+<coverage>
+    <log type="coverage-clover" target="coverage/clover.xml" />
+</coverage>
     <testsuites>
         <testsuite name="Unit">
             <directory suffix="Test.php">./tests/Unit</directory>
